@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	writerChan chan *twitter.Tweet = make(chan *twitter.Tweet, 100)
+	writerChan chan *twitter.Tweet = make(chan *twitter.Tweet)
 	topicName  string              = "tweets"
 )
 
@@ -25,6 +25,7 @@ func producer() (*Producer, error) {
 	writerConfig := kafkago.WriterConfig{
 		Brokers:          []string{"localhost:9092"},
 		Topic:            topicName,
+		BatchSize:        20,
 		CompressionCodec: snappy.NewCompressionCodec(),
 	}
 
@@ -59,14 +60,19 @@ func toKafkaHeaders(tweet *twitter.Tweet) []kafkago.Header {
 	}
 }
 
-func fromTweet(tweet *twitter.Tweet) *kafkago.Message {
+func fromTweet(tweet *twitter.Tweet) (*kafkago.Message, error) {
 	headers := toKafkaHeaders(tweet)
+	/*tweetJSON, err := json.Marshal(tweet)
+
+	if err != nil {
+		return nil, err
+	}*/
 
 	return &kafkago.Message{
 		Key:     []byte(tweet.IDStr),
 		Headers: headers,
-		Value:   []byte(tweet.Text),
-	}
+		Value:   []byte(tweet.IDStr),
+	}, nil
 }
 
 func consumeTweets(ctx context.Context) {
@@ -74,8 +80,11 @@ func consumeTweets(ctx context.Context) {
 	for {
 		select {
 		case tweet := <-writerChan:
-			msg := fromTweet(tweet)
-			err := producer.writeMessage(msg)
+			msg, err := fromTweet(tweet)
+			if err != nil {
+				panic(err)
+			}
+			err = producer.writeMessage(msg)
 			if err != nil {
 				fmt.Println(err)
 			}

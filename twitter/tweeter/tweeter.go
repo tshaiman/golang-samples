@@ -52,7 +52,7 @@ func Start() {
 	demux.Tweet = func(tweet *twitter.Tweet) {
 		tweetChannels <- tweet
 		count++
-		if count >= 10 {
+		if count >= 1000 {
 			cancel()
 			stream.Stop()
 		}
