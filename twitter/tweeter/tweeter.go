@@ -12,11 +12,11 @@ import (
 	"ts-tweets/kafka"
 )
 
-func configTweeter() *twitter.Client {
-	consumerKey := flag.String("consumer-key", "", "Twitter Consumer Key")
-	consumerSecret := flag.String("consumer-secret", "", "Twitter Consumer Secret")
-	accessToken := flag.String("access-token", "", "Twitter Access Token")
-	accessSecret := flag.String("access-secret", "", "Twitter Access Secret")
+func createClient() *twitter.Client {
+	consumerKey := flag.String("consumer-key", "kxYnZUjVhmtvSwqyPmXh2W8Pm", "Twitter Consumer Key")
+	consumerSecret := flag.String("consumer-secret", "cZNjqV2trNCb5a7ek5ubIXOgdAakF6h3Giaf3DoMl0mxAwUKSL", "Twitter Consumer Secret")
+	accessToken := flag.String("access-token", "2611487394-868TD8nCJoXa4tvq3HAJk0ZXY73JOHQ3qFbuVZN", "Twitter Access Token")
+	accessSecret := flag.String("access-secret", "GpLeEIZcAzjzEifarQ5IPNR481BnFQmlAL7TAU1S0SkI9", "Twitter Access Secret")
 	flag.Parse()
 
 	if *consumerKey == "" || *consumerSecret == "" || *accessToken == "" || *accessSecret == "" {
@@ -31,7 +31,7 @@ func configTweeter() *twitter.Client {
 
 }
 func Start() {
-	client := configTweeter()
+	client := createClient()
 	demux := twitter.NewSwitchDemux()
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -41,7 +41,7 @@ func Start() {
 	fmt.Println("Starting Stream...")
 
 	filterParams := &twitter.StreamFilterParams{
-		Track:         []string{"cats"},
+		Track:         []string{"cats", "trump", "usa", "iran", "summer"},
 		StallWarnings: twitter.Bool(true),
 	}
 	stream, err := client.Streams.Filter(filterParams)
