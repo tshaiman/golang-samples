@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -10,7 +11,7 @@ import (
 )
 
 var (
-	writerChan chan *twitter.Tweet = make(chan *twitter.Tweet)
+	writerChan chan *twitter.Tweet = make(chan *twitter.Tweet, 2000)
 	topicName  string              = "tweets"
 )
 
@@ -62,16 +63,16 @@ func toKafkaHeaders(tweet *twitter.Tweet) []kafkago.Header {
 
 func fromTweet(tweet *twitter.Tweet) (*kafkago.Message, error) {
 	headers := toKafkaHeaders(tweet)
-	/*tweetJSON, err := json.Marshal(tweet)
+	tweetJSON, err := json.Marshal(tweet)
 
 	if err != nil {
 		return nil, err
-	}*/
+	}
 
 	return &kafkago.Message{
 		Key:     []byte(tweet.IDStr),
 		Headers: headers,
-		Value:   []byte(tweet.IDStr),
+		Value:   tweetJSON,
 	}, nil
 }
 
